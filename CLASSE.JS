@@ -1,7 +1,7 @@
 class ClassNamespace {
     constructor(name) {
         this.name = name;
-        this.proxies = new Map();
+        this.proxies = new Map(); // Proxies mapeiam classes para endereços (ex: contratos)
     }
 
     // Retorna o nome do namespace
@@ -16,6 +16,10 @@ class ClassNamespace {
 
     // Adiciona um proxy para uma classe no namespace
     addProxy(className, address) {
+        if (this.proxies.has(className)) {
+            console.log(`A classe '${className}' já tem um proxy associado no namespace '${this.name}'.`);
+            return;
+        }
         this.proxies.set(className, address);
         console.log(`Proxy '${className}' adicionado com endereço '${address}' no namespace '${this.name}'.`);
     }
@@ -28,10 +32,10 @@ class ClassNamespace {
 
 class ClassNamespaceManager {
     constructor() {
-        this.namespaces = new Map();  // Mapa para armazenar todos os namespaces
+        this.namespaces = new Map();  // Armazena todos os namespaces
     }
 
-    // Evento emitido ao carregar uma nova biblioteca
+    // Função para emitir evento ao carregar uma nova biblioteca
     libraryLoaded(path) {
         console.log(`Biblioteca carregada: ${path}`);
     }
@@ -49,7 +53,7 @@ class ClassNamespaceManager {
     loadLibrary(path) {
         // Simulação de carregamento de biblioteca
         this.libraryLoaded(path);
-        // Aqui você poderia adicionar lógica para realmente carregar uma biblioteca/módulo se necessário
+        // Aqui você pode adicionar lógica para realmente carregar uma biblioteca/módulo se necessário
     }
 
     // Função para criar um novo namespace de classes
@@ -61,6 +65,14 @@ class ClassNamespaceManager {
         const newNamespace = new ClassNamespace(namespaceName);
         this.namespaces.set(namespaceName, newNamespace);
         console.log(`Namespace '${namespaceName}' criado.`);
+    }
+
+    // Função para listar todos os namespaces e proxies associados
+    listNamespaces() {
+        console.log("Namespaces existentes:");
+        this.namespaces.forEach((ns, name) => {
+            console.log(`Namespace: ${name}, Proxies: ${[...ns.getProxies()].map(([className, address]) => `${className}: ${address}`).join(', ')}`);
+        });
     }
 }
 
@@ -83,6 +95,9 @@ console.log(`Proxy para 'ClassNameA' no 'NamespaceA': ${proxy}`);
 // Tentativa de buscar proxy de uma classe que não existe
 const proxyInexistente = manager.getClassProxy("NamespaceA", "ClassNameInexistente");
 console.log(proxyInexistente);  // Deve retornar uma mensagem de erro
+
+// Listar todos os namespaces e proxies associados
+manager.listNamespaces();
 
 // Carregar uma biblioteca compartilhada
 manager.loadLibrary("path/to/library.so");

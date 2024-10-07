@@ -1,14 +1,15 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#define MAX_INVESTORS 100 // Definindo um limite para o número de investidores
+#define MAX_INVESTORS 100 // Defining a limit for the number of investors
 
 typedef struct {
     char *investors[MAX_INVESTORS];
-    int authorizedInvestors[MAX_INVESTORS]; // 1 para autorizado, 0 para não autorizado
-    long balances[MAX_INVESTORS]; // Saldo de cada investidor
-    long investedAmount[MAX_INVESTORS]; // Montante investido por cada investidor
-    int investorCount; // Contagem de investidores
+    int authorizedInvestors[MAX_INVESTORS]; // 1 for authorized, 0 for unauthorized
+    long balances[MAX_INVESTORS]; // Balance of each investor
+    long investedAmount[MAX_INVESTORS]; // Amount invested by each investor
+    int investorCount; // Count of investors
 } InvestmentContract;
 
 void invest(InvestmentContract *contract, const char *investor, long amount) {
@@ -19,7 +20,7 @@ void invest(InvestmentContract *contract, const char *investor, long amount) {
 
     int investorIndex = -1;
 
-    // Verifica se o investidor está na lista de investidores
+    // Check if the investor is in the list of investors
     for (int i = 0; i < contract->investorCount; i++) {
         if (strcmp(contract->investors[i], investor) == 0) {
             investorIndex = i;
@@ -32,51 +33,73 @@ void invest(InvestmentContract *contract, const char *investor, long amount) {
         return;
     }
 
-    // Verifica se o investidor está autorizado
+    // Check if the investor is authorized
     if (!contract->authorizedInvestors[investorIndex]) {
         printf("Investor '%s' is not authorized to invest\n", investor);
         return;
     }
 
-    // Verifica se o saldo é suficiente
+    // Check if the balance is sufficient
     if (amount > contract->balances[investorIndex]) {
         printf("Insufficient balance for investor '%s'. Current balance: %ld\n", investor, contract->balances[investorIndex]);
         return;
     }
 
-    // Atualiza os saldos e montantes investidos
+    // Update balances and invested amounts
     contract->balances[investorIndex] -= amount;
     contract->investedAmount[investorIndex] += amount;
     printf("Investment of %ld made by '%s'\n", amount, investor);
 }
 
-// Função para exemplo de uso
+// Function to initialize the investment contract and example investors
 void initializeContract(InvestmentContract *contract) {
-    // Inicialização do contrato e exemplo de investidores
-    contract->investorCount = 3;
+    contract->investorCount = 0;
 
-    contract->investors[0] = "Alice";
-    contract->authorizedInvestors[0] = 1; // Autorizado
-    contract->balances[0] = 1000; // Saldo inicial
+    // Add investors if there is space
+    if (contract->investorCount < MAX_INVESTORS) {
+        contract->investors[contract->investorCount] = strdup("Alice");
+        contract->authorizedInvestors[contract->investorCount] = 1; // Authorized
+        contract->balances[contract->investorCount] = 1000; // Initial balance
+        contract->investedAmount[contract->investorCount] = 0; // Initial investment
+        contract->investorCount++;
+    }
 
-    contract->investors[1] = "Bob";
-    contract->authorizedInvestors[1] = 0; // Não autorizado
-    contract->balances[1] = 500; // Saldo inicial
+    if (contract->investorCount < MAX_INVESTORS) {
+        contract->investors[contract->investorCount] = strdup("Bob");
+        contract->authorizedInvestors[contract->investorCount] = 0; // Not authorized
+        contract->balances[contract->investorCount] = 500; // Initial balance
+        contract->investedAmount[contract->investorCount] = 0; // Initial investment
+        contract->investorCount++;
+    }
 
-    contract->investors[2] = "Charlie";
-    contract->authorizedInvestors[2] = 1; // Autorizado
-    contract->balances[2] = 1500; // Saldo inicial
+    if (contract->investorCount < MAX_INVESTORS) {
+        contract->investors[contract->investorCount] = strdup("Charlie");
+        contract->authorizedInvestors[contract->investorCount] = 1; // Authorized
+        contract->balances[contract->investorCount] = 1500; // Initial balance
+        contract->investedAmount[contract->investorCount] = 0; // Initial investment
+        contract->investorCount++;
+    }
+}
+
+// Function to free allocated memory for investors
+void freeContract(InvestmentContract *contract) {
+    for (int i = 0; i < contract->investorCount; i++) {
+        free(contract->investors[i]);
+    }
 }
 
 int main() {
     InvestmentContract contract;
     initializeContract(&contract);
 
-    // Testando a função invest
-    invest(&contract, "Alice", 200);   // Investimento válido
-    invest(&contract, "Bob", 100);     // Investidor não autorizado
-    invest(&contract, "Charlie", 2000); // Saldo insuficiente
-    invest(&contract, "Dave", 100);    // Investidor não encontrado
+    // Testing the invest function
+    invest(&contract, "Alice", 200);   // Valid investment
+    invest(&contract, "Bob", 100);     // Unauthorized investor
+    invest(&contract, "Charlie", 2000); // Insufficient balance
+    invest(&contract, "Dave", 100);    // Investor not found
 
+    // Free allocated memory
+    freeContract(&contract);
+    
     return 0;
 }
